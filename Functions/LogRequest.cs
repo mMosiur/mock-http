@@ -1,29 +1,25 @@
-﻿using System.Net;
-using Microsoft.Azure.Functions.Worker;
+﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using MockHttp.Interfaces;
 
 namespace MockHttp.Functions;
 
 internal sealed class LogRequest
 {
-    public LogRequest()
+    private readonly IResponseBuilder _responseBuilder;
+
+    public LogRequest(IResponseBuilder responseBuilder)
     {
+        _responseBuilder = responseBuilder;
     }
 
     [Function(nameof(LogRequest))]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "GET", "PUT", "POST", Route = "log-request/{*path}")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", Route = "log-request/{*path}")]
         HttpRequestData request,
         string? path,
         FunctionContext executionContext)
     {
-        const string contentFilename = "./content.txt";
-
-        var content = File.Exists(contentFilename) ? await File.ReadAllTextAsync(contentFilename) : string.Empty;
-
-        var response = request.CreateResponse(HttpStatusCode.OK);
-        response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
-        await response.WriteStringAsync($"Path was '{path ?? "null"}' and content was '{content}'");
-        return response;
+        return await _responseBuilder.CreateResponseAsync(request);
     }
 }

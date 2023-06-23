@@ -1,5 +1,7 @@
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MockHttp.Interfaces;
+using MockHttp.Services;
 
 var host = new HostBuilder()
     .ConfigureAppConfiguration(builder =>
@@ -8,6 +10,8 @@ var host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
     .ConfigureServices(services =>
     {
+        services.AddScoped<IResponseConfig, ResponseConfig>();
+        services.AddScoped<IResponseBuilder, ResponseBuilder>();
     })
     .Build();
 
